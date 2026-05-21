@@ -2,63 +2,253 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Piano Profissional | Sustain e Glissando</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Metas - Microsoft Rewards Calculator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.1);
+            width: 100%;
+            max-width: 550px;
+            padding: 30px;
+            border: 1px solid #334155;
+        }
+
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 25px;
+            color: #38bdf8;
+            text-shadow: 0 2px 10px rgba(56, 189, 248, 0.2);
+        }
+
+        h1 span { color: #f59e0b; }
+
+        .input-group { margin-bottom: 20px; }
+
+        label {
+            display: block;
+            font-size: 14px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            background-color: #1e293b;
+            border: 2px solid #334155;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+        }
+
+        /* Barra de Progresso Luxuosa */
+        .progress-container {
+            margin: 30px 0 20px 0;
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #334155;
+        }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .progress-bar-wrapper {
+            width: 100%;
+            height: 22px;
+            background-color: #0f172a;
+            border-radius: 50px;
+            overflow: hidden;
+            border: 1px solid #475569;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #0284c7, #38bdf8, #4ade80);
+            border-radius: 50px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+        }
+
+        .progress-percentage {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        /* Painel de Resultados */
+        .result-panel {
+            background: linear-gradient(180deg, rgba(56, 189, 248, 0.1), rgba(15, 23, 42, 0));
+            border: 1px dashed #38bdf8;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 25px;
+            display: none;
+        }
+
+        .result-title { font-size: 18px; color: #4ade80; font-weight: bold; margin-bottom: 8px; }
+        .result-days { font-size: 15px; color: #f8fafc; margin-bottom: 6px; }
+        .result-date { font-size: 16px; color: #f59e0b; font-weight: bold; }
+        .save-badge { text-align: center; font-size: 12px; color: #64748b; margin-top: 15px; }
+    </style>
 </head>
 <body>
-<div class="piano-app">
-    <div class="control-bar">
-        <div class="btn-group">
-            <button id="recordBtn" class="btn-rec">🎙️ Gravar</button>
-            <button id="stopRecordBtn" disabled>⏹️ Parar</button>
-            <button id="uploadBtn">📂 MP3/Som</button>
-            <input type="file" id="fileInput" accept="audio/*" style="display:none">
+
+<div class="container">
+    <h1>🏆 Painel de Metas <span>Rewards</span></h1>
+
+    <div class="input-group">
+        <label for="pontosAtuais">Quantos pontos você tem agora?</label>
+        <input type="number" id="pontosAtuais" placeholder="Ex: 8900">
+    </div>
+
+    <div class="input-group">
+        <label for="metaPontos">Qual é a sua meta de pontos?</label>
+        <input type="number" id="metaPontos" placeholder="Ex: 12045">
+    </div>
+
+    <div class="input-group">
+        <label for="pontosPorDia">Quantos pontos você ganha por dia?</label>
+        <input type="number" id="pontosPorDia" placeholder="Ex: 120">
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-labels">
+            <span>0</span>
+            <span id="labelAtual">0 / 0</span>
+            <span id="labelMeta">0</span>
         </div>
-        <div class="btn-group">
-            <button id="confirmSampleBtn" class="btn-primary">✅ Confirmar Sample</button>
-            <button id="deleteSampleBtn" class="btn-del">🗑️ Deletar (Voltar Piano)</button>
-        </div>
-        <div class="btn-group">
-            <button id="metroToggle" class="btn-metro">🥁 Metrônomo OFF</button>
-            <input type="range" id="bpmSlider" min="40" max="200" value="110" style="width:90px">
-            <span id="bpmValue" style="font-weight:bold">110</span>
-        </div>
-        <div class="btn-group">
-            <button id="leftOctave">◀ −1 Oitava</button>
-            <button id="rightOctave">➕1 Oitava ▶</button>
+        <div class="progress-bar-wrapper">
+            <div class="progress-bar-fill" id="progressBar"></div>
+            <div class="progress-percentage" id="progressPct">0%</div>
         </div>
     </div>
 
-    <div class="edit-card">
-        <div style="display:flex; justify-content: space-between;">
-            <strong>🎚️ Editar faixa (Início / Fim)</strong>
-            <span id="sampleStatus">Nenhum áudio carregado</span>
-        </div>
-        <div class="slider-pair">
-            <div class="slider-item">
-                <label>▶ Início: <span id="startLabel">0.00</span>s</label>
-                <input type="range" id="startSlider" min="0" max="1" step="0.001" value="0" disabled>
-            </div>
-            <div class="slider-item">
-                <label>⏹️ Fim: <span id="endLabel">0.00</span>s</label>
-                <input type="range" id="endSlider" min="0" max="1" step="0.001" value="1" disabled>
-            </div>
-        </div>
-        <div class="warning" id="messageArea">
-            💡 Recomendado: som >5s e <60s. Após ajustar, clique em CONFIRMAR. O sample terá pitch por nota!
-        </div>
+    <div class="result-panel" id="resultPanel">
+        <div class="result-title" id="resFaltam">Faltam 0 pontos!</div>
+        <div class="result-days" id="resDias">Faltam X dias para a sua meta!</div>
+        <div class="result-date" id="resData">Cai no dia: -</div>
     </div>
 
-    <div class="piano-box">
-        <div class="piano" id="pianoKeyboard"></div>
-    </div>
-    <div class="info-tip">
-        🎹 Toque / deslize sobre as teclas (glissando). Setas movem 2 oitavas. Sample customizado altera o timbre com pitch shift.
-        Segure a tecla para sustain. Solte para parar o som.
-    </div>
+    <div class="save-badge">💾 Seus dados são salvos automaticamente no navegador!</div>
 </div>
 
-<script src="script.js"></script>
+<script>
+    const inAtuais = document.getElementById('pontosAtuais');
+    const inMeta = document.getElementById('metaPontos');
+    const inDia = document.getElementById('pontosPorDia');
+
+    const labelAtual = document.getElementById('labelAtual');
+    const labelMeta = document.getElementById('labelMeta');
+    const progressBar = document.getElementById('progressBar');
+    const progressPct = document.getElementById('progressPct');
+
+    const resultPanel = document.getElementById('resultPanel');
+    const resFaltam = document.getElementById('resFaltam');
+    const resDias = document.getElementById('resDias');
+    const resData = document.getElementById('resData');
+
+    // Carregar dados salvos ao iniciar
+    window.addEventListener('load', () => {
+        if(localStorage.getItem('rewards_atuais')) inAtuais.value = localStorage.getItem('rewards_atuais');
+        if(localStorage.getItem('rewards_meta')) inMeta.value = localStorage.getItem('rewards_meta');
+        if(localStorage.getItem('rewards_dia')) inDia.value = localStorage.getItem('rewards_dia');
+        calcular();
+    });
+
+    // Escuta em tempo real
+    inAtuais.addEventListener('input', calcular);
+    inMeta.addEventListener('input', calcular);
+    inDia.addEventListener('input', calcular);
+
+    function calcular() {
+        const atuais = parseInt(inAtuais.value) || 0;
+        const meta = parseInt(inMeta.value) || 0;
+        const porDia = parseInt(inDia.value) || 0;
+
+        // Salvar localmente
+        localStorage.setItem('rewards_atuais', atuais);
+        localStorage.setItem('rewards_meta', meta);
+        localStorage.setItem('rewards_dia', porDia);
+
+        labelMeta.innerText = meta.toLocaleString('pt-BR');
+        labelAtual.innerText = `${atuais.toLocaleString('pt-BR')} / ${meta.toLocaleString('pt-BR')}`;
+
+        let porcentagem = meta > 0 ? (atuais / meta) * 100 : 0;
+        if (porcentagem > 100) porcentagem = 100;
+        
+        progressBar.style.width = `${porcentagem.toFixed(1)}%`;
+        progressPct.innerText = `${porcentagem.toFixed(1)}%`;
+
+        if (meta > 0 && atuais < meta && porDia > 0) {
+            const pontosFaltantes = meta - atuais;
+            const diasNecessarios = Math.ceil(pontosFaltantes / porDia);
+
+            const hoje = new Date();
+            hoje.setDate(hoje.getDate() + diasNecessarios);
+
+            const opcoesData = { day: 'numeric', month: 'long', year: 'numeric' };
+            const dataFinalFormatada = hoje.toLocaleDateString('pt-BR', opcoesData);
+
+            resFaltam.innerText = `Faltam ${pontosFaltantes.toLocaleString('pt-BR')} pontos!`;
+            resDias.innerText = `⏳ Faltam aproximadamente ${diasNecessarios} dias para a sua meta!`;
+            resData.innerText = `📅 Cai no dia: ${dataFinalFormatada}`;
+            resultPanel.style.display = 'block';
+        } else if (meta > 0 && atuais >= meta) {
+            resFaltam.innerText = '🎉 Meta Alcançada!';
+            resDias.innerText = 'Você já tem os pontos necessários!';
+            resData.innerText = 'Pronto para resgatar o seu prêmio!';
+            resultPanel.style.display = 'block';
+        } else {
+            resultPanel.style.display = 'none';
+        }
+    }
+</script>
 </body>
-                </html>
+    </html>
+                

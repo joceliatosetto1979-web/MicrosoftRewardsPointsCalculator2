@@ -307,7 +307,6 @@
         .info-section ul { padding-left: 20px; font-size: 13px; color: #cbd5e1; }
         .info-section li { margin-bottom: 4px; }
 
-        /* Rodapé de ferramentas e informações */
         .footer-info {
             text-align: center;
             font-size: 12px;
@@ -329,18 +328,14 @@
             padding: 2px 5px;
         }
 
-        .btn-change-bday:hover {
-            color: #f59e0b;
-        }
+        .btn-change-bday:hover { color: #f59e0b; }
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
-    
-<audio id="bgMusic" loop>
-    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
-</audio>
+
+<audio id="bgMusic" loop></audio>
 
 <div class="container">
     <div class="bday-banner" id="bdayBanner">🎉 Parabéns para você! 🎂</div>
@@ -414,7 +409,6 @@
             <div class="modal-title">ℹ️ Como Ganhar Pontos no Rewards</div>
             <span class="close-modal" id="closeModal">&times;</span>
         </div>
-        
         <div class="info-section">
             <h4>🔍 Pesquisas no Bing</h4>
             <ul>
@@ -423,7 +417,6 @@
                 <li><strong>Bônus do Edge:</strong> Pesquisar direto no navegador Edge dá +12 pontos diários.</li>
             </ul>
         </div>
-
         <div class="info-section">
             <h4>📅 Painel de Atividades (Web e Xbox)</h4>
             <ul>
@@ -432,7 +425,6 @@
                 <li><strong>App Xbox / PC:</strong> Abra o app do Xbox no celular ou PC para resgatar os pontos de check-in de jogos.</li>
             </ul>
         </div>
-
         <div class="info-section">
             <h4>🔥 Bônus de Sequência (Streak)</h4>
             <ul>
@@ -467,6 +459,10 @@
     const closeModal = document.getElementById('closeModal');
     
     let isPlaying = false;
+
+    // Links das músicas
+    const lofiCalmo = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"; 
+    const electroFesta = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3"; // Música elétrica para aniversariantes
 
     function setPreset(valor) {
         inMeta.value = valor;
@@ -504,7 +500,6 @@
                 streak = 0;
                 localStorage.setItem('rewards_streak', 0);
             }
-            
             if (diferencaDias === 0) {
                 document.getElementById('btnStreak').disabled = true;
                 document.getElementById('btnStreak').innerText = "Feito hoje ✔️";
@@ -523,7 +518,6 @@
         document.getElementById('btnStreak').innerText = "Feito hoje ✔️";
     }
 
-    // --- SISTEMA DE ANIVERSÁRIO ---
     function soltarConfetes() {
         let duracao = 3 * 1000;
         let fim = Date.now() + duracao;
@@ -540,7 +534,7 @@
         let bdayMes = localStorage.getItem('user_bday_mes');
 
         if (!bdayDia || !bdayMes || forcarMudanca) {
-            const textoPrompt = forcarMudanca ? "Digite a nova data de nascimento (DD/MM):" : "Em qual data você nasceu? (Use o formato DD/MM, ex: 22/05):";
+            const textoPrompt = forcarMudanca ? "Digite a nova data de nascimento (DD/MM):" : "Em qual data você nasceu? (Use o formato DD/MM, ex: 01/06):";
             const dataNascimento = prompt(textoPrompt);
             
             if (dataNascimento && dataNascimento.includes('/')) {
@@ -554,35 +548,57 @@
                     alert("Data de nascimento salva com sucesso!");
                     verificarAniversario();
                 } else {
-                    alert("Formato ou valores inválidos! Tente novamente no formato DD/MM.");
+                    alert("Formato inválido! Use o formato DD/MM.");
                 }
             }
         }
     }
 
+    // --- LOGICA DE ANIVERSÁRIO ARRUMADA (DONO = 01/06) ---
     function verificarAniversario() {
         const hoje = new Date();
         const diaAtual = hoje.getDate();
         const mesAtual = hoje.getMonth() + 1;
 
-        // 1. Regra Especial de 1º de Junho (Dono do site)
+        let bdayDia = parseInt(localStorage.getItem('user_bday_dia'));
+        let bdayMes = parseInt(localStorage.getItem('user_bday_mes'));
+
+        let ehAniversarioDoUsuarioLogado = false;
+
+              // 1. CHECAGEM SE HOJE É DIA 1º DE JUNHO
         if (diaAtual === 1 && mesAtual === 6) {
-            bdayBanner.innerText = "👑 Hoje é aniversário do Dono do site!";
-            bdayBanner.style.display = "block";
-            soltarConfetes();
-            return;
+            if (bdayDia === 1 && bdayMes === 6) {
+                // Se a pessoa que acessou configurou 01/06 (Você, o Dono do site!)
+                bdayBanner.innerText = "👑 Você faz junto com o dono deste site! Feliz aniversário!!!!";
+                ehAniversarioDoUsuarioLogado = true;
+            } else {
+                // Se for outro usuário visitando o site no dia 01/06
+                bdayBanner.innerText = "👑 Hoje é aniversário do Dono do site!";
+                bdayBanner.style.display = "block";
+                soltarConfetes();
+                bgMusic.src = lofiCalmo; // Música normal calma para os outros visitantes
+                if (isPlaying) bgMusic.play().catch(e => {});
+                return;
+            }
+        } 
+        // 2. CHECAGEM DE OUTROS ANIVERSÁRIOS EM DATAS DIFERENTES
+        else if (bdayDia === diaAtual && bdayMes === mesAtual) {
+            bdayBanner.innerText = "🎉 Parabéns para você! 🎂";
+            ehAniversarioDoUsuarioLogado = true;
         }
 
-        // 2. Aniversário do Usuário
-        let bdayDia = localStorage.getItem('user_bday_dia');
-        let bdayMes = localStorage.getItem('user_bday_mes');
-
-        if (bdayDia && bdayMes && parseInt(bdayDia) === diaAtual && parseInt(bdayMes) === mesAtual) {
-            bdayBanner.innerText = "🎉 Parabéns para você! 🎂";
+        // Aplica a música eletrônica alegre e dançante apenas se quem entrar estiver de aniversário!
+        if (ehAniversarioDoUsuarioLogado) {
             bdayBanner.style.display = "block";
             soltarConfetes();
+            bgMusic.src = electroFesta; 
         } else {
             bdayBanner.style.display = "none";
+            bgMusic.src = lofiCalmo; 
+        }
+
+        if (isPlaying) {
+            bgMusic.play().catch(e => console.log("Áudio aguardando clique."));
         }
     }
 
@@ -593,7 +609,7 @@
         if(localStorage.getItem('rewards_data_alvo')) inDataAlvo.value = localStorage.getItem('rewards_data_alvo');
         checkStreakReset();
         calcular(); 
-        perguntarDataNascimento(false); // Só pergunta se nunca tiver sido salva
+        perguntarDataNascimento(false);
         verificarAniversario();
     });
 
@@ -675,4 +691,4 @@
     }
 </script>
 </body>
-        </html>
+</html>

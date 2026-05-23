@@ -71,6 +71,27 @@
 
         h1 span { color: #f59e0b; }
 
+        /* Banner de Aniversário Especial */
+        .bday-banner {
+            display: none;
+            background: linear-gradient(90deg, #ec4899, #8b5cf6, #3b82f6);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+            animation: pulseBday 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseBday {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); box-shadow: 0 6px 25px rgba(236, 72, 153, 0.6); }
+            100% { transform: scale(1); }
+        }
+
         .presets {
             display: flex;
             gap: 10px;
@@ -156,6 +177,28 @@
 
         .streak-btn:hover { background: #d97706; }
         .streak-btn:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; }
+
+        .btn-calcular {
+            width: 100%;
+            background: linear-gradient(90deg, #38bdf8, #0284c7);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-calcular:hover {
+            background: linear-gradient(90deg, #0284c7, #0369a1);
+            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.5);
+            transform: translateY(-1px);
+        }
 
         .progress-container {
             margin: 25px 0 20px 0;
@@ -264,16 +307,44 @@
         .info-section ul { padding-left: 20px; font-size: 13px; color: #cbd5e1; }
         .info-section li { margin-bottom: 4px; }
 
-        .save-badge { text-align: center; font-size: 12px; color: #64748b; margin-top: 15px; }
+        /* Rodapé de ferramentas e informações */
+        .footer-info {
+            text-align: center;
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .btn-change-bday {
+            background: none;
+            border: none;
+            color: #38bdf8;
+            text-decoration: underline;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 2px 5px;
+        }
+
+        .btn-change-bday:hover {
+            color: #f59e0b;
+        }
     </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
-
+    
 <audio id="bgMusic" loop>
     <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
 </audio>
 
 <div class="container">
+    <div class="bday-banner" id="bdayBanner">🎉 Parabéns para você! 🎂</div>
+
     <div class="top-actions">
         <button class="icon-btn" id="btnInfo" title="Como ganhar pontos">ℹ️</button>
         <h1>🏆 Painel de Metas <span>Rewards</span></h1>
@@ -310,6 +381,8 @@
         <input type="date" id="dataAlvo">
     </div>
 
+    <button class="btn-calcular" id="btnCalcular" onclick="calcular()">📊 Calcular Resultados</button>
+
     <div class="progress-container">
         <div class="progress-labels">
             <span>0</span>
@@ -323,13 +396,16 @@
     </div>
 
     <div class="result-panel" id="resultPanel">
-        <div class="result-title" id="resFaltam">Digite seus pontos acima</div>
-        <div class="result-days" id="resDias">O painel está pronto!</div>
-        <div class="result-date" id="resData">Aguardando dados...</div>
+        <div class="result-title" id="resFaltam">Aguardando comando</div>
+        <div class="result-days" id="resDias">Preencha os campos e clique em Calcular!</div>
+        <div class="result-date" id="resData">Pronto para rodar.</div>
         <div class="reverse-info" id="resReverso" style="display:none;"></div>
     </div>
 
-    <div class="save-badge">💾 Seus dados são salvos automaticamente no navegador!</div>
+    <div class="footer-info">
+        <div>💾 Seus dados são salvos automaticamente ao calcular!</div>
+        <button class="btn-change-bday" onclick="perguntarDataNascimento(true)">⚙️ Mudar data de nascimento</button>
+    </div>
 </div>
 
 <div class="modal" id="infoModal">
@@ -382,6 +458,7 @@
     const resDias = document.getElementById('resDias');
     const resData = document.getElementById('resData');
     const resReverso = document.getElementById('resReverso');
+    const bdayBanner = document.getElementById('bdayBanner');
 
     const bgMusic = document.getElementById('bgMusic');
     const btnMusic = document.getElementById('btnMusic');
@@ -446,19 +523,79 @@
         document.getElementById('btnStreak').innerText = "Feito hoje ✔️";
     }
 
+    // --- SISTEMA DE ANIVERSÁRIO ---
+    function soltarConfetes() {
+        let duracao = 3 * 1000;
+        let fim = Date.now() + duracao;
+
+        (function frame() {
+            confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0, y: 0.8 } });
+            confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1, y: 0.8 } });
+            if (Date.now() < fim) { requestAnimationFrame(frame); }
+        }());
+    }
+
+    function perguntarDataNascimento(forcarMudanca = false) {
+        let bdayDia = localStorage.getItem('user_bday_dia');
+        let bdayMes = localStorage.getItem('user_bday_mes');
+
+        if (!bdayDia || !bdayMes || forcarMudanca) {
+            const textoPrompt = forcarMudanca ? "Digite a nova data de nascimento (DD/MM):" : "Em qual data você nasceu? (Use o formato DD/MM, ex: 22/05):";
+            const dataNascimento = prompt(textoPrompt);
+            
+            if (dataNascimento && dataNascimento.includes('/')) {
+                const partes = dataNascimento.split('/');
+                const novoDia = parseInt(partes[0]);
+                const novoMes = parseInt(partes[1]);
+                
+                if(!isNaN(novoDia) && !isNaN(novoMes) && novoDia > 0 && novoDia <= 31 && novoMes > 0 && novoMes <= 12) {
+                    localStorage.setItem('user_bday_dia', novoDia);
+                    localStorage.setItem('user_bday_mes', novoMes);
+                    alert("Data de nascimento salva com sucesso!");
+                    verificarAniversario();
+                } else {
+                    alert("Formato ou valores inválidos! Tente novamente no formato DD/MM.");
+                }
+            }
+        }
+    }
+
+    function verificarAniversario() {
+        const hoje = new Date();
+        const diaAtual = hoje.getDate();
+        const mesAtual = hoje.getMonth() + 1;
+
+        // 1. Regra Especial de 1º de Junho (Dono do site)
+        if (diaAtual === 1 && mesAtual === 6) {
+            bdayBanner.innerText = "👑 Hoje é aniversário do Dono do site!";
+            bdayBanner.style.display = "block";
+            soltarConfetes();
+            return;
+        }
+
+        // 2. Aniversário do Usuário
+        let bdayDia = localStorage.getItem('user_bday_dia');
+        let bdayMes = localStorage.getItem('user_bday_mes');
+
+        if (bdayDia && bdayMes && parseInt(bdayDia) === diaAtual && parseInt(bdayMes) === mesAtual) {
+            bdayBanner.innerText = "🎉 Parabéns para você! 🎂";
+            bdayBanner.style.display = "block";
+            soltarConfetes();
+        } else {
+            bdayBanner.style.display = "none";
+        }
+    }
+
     window.addEventListener('load', () => {
         if(localStorage.getItem('rewards_atuais')) inAtuais.value = localStorage.getItem('rewards_atuais');
         if(localStorage.getItem('rewards_meta')) inMeta.value = localStorage.getItem('rewards_meta');
         if(localStorage.getItem('rewards_dia')) inDia.value = localStorage.getItem('rewards_dia');
         if(localStorage.getItem('rewards_data_alvo')) inDataAlvo.value = localStorage.getItem('rewards_data_alvo');
         checkStreakReset();
-        calcular();
+        calcular(); 
+        perguntarDataNascimento(false); // Só pergunta se nunca tiver sido salva
+        verificarAniversario();
     });
-
-    inAtuais.addEventListener('input', calcular);
-    inMeta.addEventListener('input', calcular);
-    inDia.addEventListener('input', calcular);
-    inDataAlvo.addEventListener('input', calcular);
 
     function calcular() {
         let atuais = parseInt(inAtuais.value) || 0;
@@ -467,9 +604,9 @@
         const dataAlvoStr = inDataAlvo.value;
 
         if (meta > 10000000) {
-            resFaltam.innerText = '🛸 Alerta do Espaço-Tempo!';
-            resDias.innerText = 'Essa meta é muito gigante! Digite um valor real.';
-            resData.innerText = 'Evitando bugs do além...';
+            resFaltam.innerText = '🛸 Alerta Espacial!';
+            resDias.innerText = 'Essa meta ultrapassou a atmosfera terrestre.';
+            resData.innerText = 'Digite um valor real de pontos.';
             resReverso.style.display = 'none';
             return;
         }
@@ -488,8 +625,6 @@
         progressBar.style.width = `${porcentagem.toFixed(1)}%`;
         progressPct.innerText = `${porcentagem.toFixed(1)}%`;
 
-        let exibiuResultado = false;
-
         if (meta > 0 && atuais < meta && porDia > 0) {
             const pontosFaltantes = meta - atuais;
             const diasNecessarios = Math.ceil(pontosFaltantes / porDia);
@@ -503,13 +638,16 @@
             resFaltam.innerText = `Faltam ${pontosFaltantes.toLocaleString('pt-BR')} pontos!`;
             resDias.innerText = `⏳ Faltam aproximadamente ${diasNecessarios} dias para a sua meta!`;
             resData.innerText = `📅 Cai no dia: ${dataFinalFormatada}`;
-            exibiuResultado = true;
         } else if (meta > 0 && atuais >= meta) {
             resFaltam.innerText = '🎉 Meta Alcançada!';
-            resDias.innerText = 'Você já tem os pontos necessários!';
-            resData.innerText = 'Pronto para resgatar o seu prêmio!';
+            resDias.innerText = 'Você atingiu ou superou os pontos necessários!';
+            resData.innerText = 'Pronto para fazer seu resgate!';
             resReverso.style.display = 'none';
             return;
+        } else {
+            resFaltam.innerText = '⚠️ Dados Incompletos';
+            resDias.innerText = 'Por favor, confira os valores informados.';
+            resData.innerText = 'Os pontos diários devem ser maiores que 0.';
         }
 
         if (meta > 0 && atuais < meta && dataAlvoStr) {
@@ -525,10 +663,10 @@
                 const pontosFaltantes = meta - atuais;
                 const pontosNecessariosPorDia = Math.ceil(pontosFaltantes / diasAteAlvo);
                 
-                resReverso.innerText = `🎯 Para terminar até esta data, você precisará fazer cerca de ${pontosNecessariosPorDia} pontos por dia!`;
+                resReverso.innerText = `🎯 Alvo Reverso: Para terminar exatamente nesta data escolhida, você vai precisar coletar ${pontosNecessariosPorDia} pontos por dia!`;
                 resReverso.style.display = 'block';
             } else {
-                resReverso.innerText = `⚠️ Data alvo definida para hoje ou passado (Cálculo reverso ignorado).`;
+                resReverso.innerText = `⚠️ A data alvo precisa ser um dia depois de hoje para gerar o cálculo reverso.`;
                 resReverso.style.display = 'block';
             }
         } else {
@@ -537,5 +675,4 @@
     }
 </script>
 </body>
-            </html>
-                                                                       
+        </html>

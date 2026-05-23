@@ -146,7 +146,7 @@
             background: #f59e0b;
             color: #0f172a;
             border: none;
-            padding: 6px 12px;
+            padding: 8px 14px;
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
@@ -214,7 +214,7 @@
             padding: 20px;
             text-align: center;
             margin-top: 20px;
-            display: none;
+            display: block;
         }
 
         .result-title { font-size: 18px; color: #4ade80; font-weight: bold; margin-bottom: 8px; }
@@ -270,7 +270,7 @@
 <body>
 
 <audio id="bgMusic" loop>
-    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="overwrite-mpeg">
+    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
 </audio>
 
 <div class="container">
@@ -281,8 +281,8 @@
     </div>
 
     <div class="presets">
-        <button class="preset-btn" onclick="setPreset(12045)">🍫 Kopenhagen (R$50)</button>
-        <button class="preset-btn" onclick="setPreset(13000)">🎮 Roblox Gift Card</button>
+        <button class="preset-btn" id="presetKop" onclick="setPreset(12045)">🍫 Kopenhagen (R$50)</button>
+        <button class="preset-btn" id="presetRoblox" onclick="setPreset(13000)">🎮 Roblox Gift Card</button>
     </div>
 
     <div class="streak-container">
@@ -323,13 +323,13 @@
     </div>
 
     <div class="result-panel" id="resultPanel">
-        <div class="result-title" id="resFaltam">Faltam 0 pontos!</div>
-        <div class="result-days" id="resDias">Faltam X dias para a sua meta!</div>
-        <div class="result-date" id="resData">Cai no dia: -</div>
+        <div class="result-title" id="resFaltam">Digite seus pontos acima</div>
+        <div class="result-days" id="resDias">O painel está pronto!</div>
+        <div class="result-date" id="resData">Aguardando dados...</div>
         <div class="reverse-info" id="resReverso" style="display:none;"></div>
     </div>
 
-    <div class="save-badge">💾 Dados e sequências salvos automaticamente!</div>
+    <div class="save-badge">💾 Seus dados são salvos automaticamente no navegador!</div>
 </div>
 
 <div class="modal" id="infoModal">
@@ -398,7 +398,7 @@
 
     btnMusic.addEventListener('click', () => {
         if (!isPlaying) {
-            bgMusic.play().catch(e => console.log("Áudio bloqueado. Toque no site primeiro."));
+            bgMusic.play().catch(e => console.log("Toque na tela primeiro."));
             btnMusic.innerText = "⏸️";
             btnMusic.style.borderColor = "#4ade80";
             isPlaying = true;
@@ -469,9 +469,8 @@
         if (meta > 10000000) {
             resFaltam.innerText = '🛸 Alerta do Espaço-Tempo!';
             resDias.innerText = 'Essa meta é muito gigante! Digite um valor real.';
-            resData.innerText = 'Evitando o ano 212634... hshshs';
+            resData.innerText = 'Evitando bugs do além...';
             resReverso.style.display = 'none';
-            resultPanel.style.display = 'block';
             return;
         }
 
@@ -504,19 +503,18 @@
             resFaltam.innerText = `Faltam ${pontosFaltantes.toLocaleString('pt-BR')} pontos!`;
             resDias.innerText = `⏳ Faltam aproximadamente ${diasNecessarios} dias para a sua meta!`;
             resData.innerText = `📅 Cai no dia: ${dataFinalFormatada}`;
-            resultPanel.style.display = 'block';
             exibiuResultado = true;
         } else if (meta > 0 && atuais >= meta) {
             resFaltam.innerText = '🎉 Meta Alcançada!';
             resDias.innerText = 'Você já tem os pontos necessários!';
             resData.innerText = 'Pronto para resgatar o seu prêmio!';
             resReverso.style.display = 'none';
-            resultPanel.style.display = 'block';
             return;
         }
 
         if (meta > 0 && atuais < meta && dataAlvoStr) {
-            const dataAlvo = new Date(dataAlvoStr + 'T00:00:00');
+            const parts = dataAlvoStr.split('-');
+            const dataAlvo = new Date(parts[0], parts[1] - 1, parts[2]);
             const hoje = new Date();
             hoje.setHours(0,0,0,0);
 
@@ -529,21 +527,15 @@
                 
                 resReverso.innerText = `🎯 Para terminar até esta data, você precisará fazer cerca de ${pontosNecessariosPorDia} pontos por dia!`;
                 resReverso.style.display = 'block';
-                if (!exibiuResultado) {
-                    resFaltam.innerText = `Faltam ${pontosFaltantes.toLocaleString('pt-BR')} pontos!`;
-                    resDias.innerText = `Faltam ${diasAteAlvo} dias para a data escolhida.`;
-                    resData.innerText = `📅 Alvo: ${dataAlvo.toLocaleDateString('pt-BR')}`;
-                    resultPanel.style.display = 'block';
-                }
             } else {
-                resReverso.innerText = `❌ A data alvo precisa ser no futuro!`;
+                resReverso.innerText = `⚠️ Data alvo definida para hoje ou passado (Cálculo reverso ignorado).`;
                 resReverso.style.display = 'block';
             }
         } else {
             resReverso.style.display = 'none';
         }
-
-        if (!exibiuResultado && !dataAlvoStr) {
-            resultPanel.style.display = 'none';
-        }
-  
+    }
+</script>
+</body>
+            </html>
+                                                                       
